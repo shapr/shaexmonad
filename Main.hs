@@ -36,7 +36,7 @@ main = do
 
 startup :: X()
 startup = do
-  spawn "trayer --edge bottom --align right --SetDockType true --SetPartialStrut true --expand true --widthtype percent --width 100 --height 25 --transparent true --alpha 50 --tint 0xff0000"
+  spawn "trayer --edge bottom --align right --SetDockType true --SetPartialStrut true --expand true --widthtype request --height 25"
   spawn "nm-applet"
     
 -- shae is awesome
