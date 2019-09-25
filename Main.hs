@@ -2,24 +2,45 @@ import           System.IO
 import           XMonad
 import           XMonad.Hooks.DynamicLog
 import           XMonad.Hooks.ManageDocks
-import           XMonad.Util.EZConfig     (additionalKeys)
-import           XMonad.Util.Run          (spawnPipe)
+import           XMonad.Hooks.ManageHelpers (doCenterFloat, doFullFloat,
+                                             isDialog, isInProperty)
+import           XMonad.Hooks.Place         (placeHook, simpleSmart)
+import           XMonad.Hooks.UrgencyHook
+import           XMonad.Layout.Fullscreen   (fullscreenFull,
+                                             fullscreenManageHook)
+import qualified XMonad.StackSet            as W
+import           XMonad.Util.EZConfig       (additionalKeys)
+import           XMonad.Util.NamedWindows
+import           XMonad.Util.Run
+import           XMonad.Util.Run            (spawnPipe)
 
 myManageHook = composeAll
-    [ className =? "Gimp"      --> doFloat
+    [ fullscreenManageHook
+    , isDialog     --> doCenterFloat
+    , className =? "Pavucontrol"    --> doCenterFloat
+    , className =? "pinentry"       --> doCenterFloat  -- matches for pinentry-qt
+    , resource  =? "pinentry"       --> doCenterFloat  -- matches for pinentry-gtk (wtf?)
+    , className =? "Nm-connection-editor" --> doFloat
+    , title     =? "PlayOnLinux"    --> doFloat
+    , title     =? "Steam Keyboard" --> doIgnore
+    , stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog" --> (doCenterFloat <+> doF W.swapMaster)
+    , isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_SPLASH" --> doIgnore
+    , isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NOTIFICATION" --> doIgnore
+    , className =? "Gimp"      --> doFloat
     , className =? "Vncviewer" --> doFloat
+    , placeHook simpleSmart
     ]
 
 main = do
-    xmproc <- spawnPipe "/home/shae/.cabal/bin/xmobar /home/shae/.xmobarrc"
+    -- xmproc <- spawnPipe "/home/shae/.cabal/bin/xmobar /home/shae/.xmobarrc"
     xmonad $ defaultConfig
         { manageHook = manageDocks <+> myManageHook -- make sure to include myManageHook definition from above
                         <+> manageHook defaultConfig
         , layoutHook = avoidStruts  $  layoutHook defaultConfig
-        , logHook = dynamicLogWithPP xmobarPP
-                        { ppOutput = hPutStrLn xmproc
-                        , ppTitle = xmobarColor "green" "" . shorten 50
-                        }
+        -- , logHook = dynamicLogWithPP xmobarPP
+        --                 { ppOutput = hPutStrLn xmproc
+        --                 , ppTitle = xmobarColor "green" "" . shorten 50
+        --                 }
         , modMask = mod4Mask     -- Rebind Mod to the Windows key
         , startupHook = startup
         } `additionalKeys`
@@ -38,5 +59,13 @@ startup :: X()
 startup = do
   spawn "trayer --edge bottom --align right --SetDockType true --SetPartialStrut true --expand true --widthtype request --height 25"
   spawn "nm-applet"
-    
--- shae is awesome
+
+-- from https://pbrisbin.com/posts/using_notify_osd_for_xmonad_notifications/
+data LibNotifyUrgencyHook = LibNotifyUrgencyHook deriving (Read, Show)
+
+instance UrgencyHook LibNotifyUrgencyHook where
+    urgencyHook LibNotifyUrgencyHook w = do
+        name     <- getName w
+        Just idx <- (W.findTag w) <$> gets windowset
+
+        safeSpawn "notify-send" [show name, "workspace " ++ idx]
