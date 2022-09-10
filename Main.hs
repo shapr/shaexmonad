@@ -1,4 +1,5 @@
 import XMonad
+import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
   ( doCenterFloat,
@@ -38,28 +39,29 @@ main :: IO ()
 main = do
   -- xmproc <- spawnPipe "/home/shae/.cabal/bin/xmobar /home/shae/.xmobarrc"
   xmonad $
-    def
-      { manageHook =
-          manageDocks <+> myManageHook -- make sure to include myManageHook definition from above
-            <+> manageHook def,
-        layoutHook = avoidStruts $ layoutHook def,
-        -- , logHook = dynamicLogWithPP xmobarPP
-        --                 { ppOutput = hPutStrLn xmproc
-        --                 , ppTitle = xmobarColor "green" "" . shorten 50
-        --                 }
-        modMask = mod4Mask, -- Rebind Mod to the Windows key
-        startupHook = startup
-      }
-      `additionalKeys` [ ((mod4Mask .|. shiftMask, xK_z), spawn "slock"),
-                         ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s"),
-                         ((0, xK_Print), spawn "scrot")
-                         -- , ((0, xF86XK_AudioRaiseVolume), spawn "pactl set-sink-volume 1 +1%; pactl set-sink-volume 2 +1%")
-                         -- , ((0, xF86XK_AudioLowerVolume), spawn "pactl set-sink-volume 1 -1%; pactl set-sink-volume 2 -1%")
-                         -- , ((0, xF86XK_AudioMute), spawn "pactl set-sink-mute 1 toggle; pactl set-sink-mute 2 toggle")
-                         -- , ((0, xF86XK_MonBrightnessUp), spawn "xbacklight -steps 3 -inc 5")
-                         -- , ((0, xF86XK_MonBrightnessDown), spawn "xbacklight -steps 3 -dec 5")
-                       ]
-        `removeKeys` [(mod4Mask, xK_l)]
+    ewmhFullscreen . ewmh $
+      def
+        { manageHook =
+            manageDocks <+> myManageHook -- make sure to include myManageHook definition from above
+              <+> manageHook def,
+          layoutHook = avoidStruts $ layoutHook def,
+          -- , logHook = dynamicLogWithPP xmobarPP
+          --                 { ppOutput = hPutStrLn xmproc
+          --                 , ppTitle = xmobarColor "green" "" . shorten 50
+          --                 }
+          modMask = mod4Mask, -- Rebind Mod to the Windows key
+          startupHook = startup
+        }
+        `additionalKeys` [ ((mod4Mask .|. shiftMask, xK_z), spawn "slock"),
+                           ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s"),
+                           ((0, xK_Print), spawn "scrot")
+                           -- , ((0, xF86XK_AudioRaiseVolume), spawn "pactl set-sink-volume 1 +1%; pactl set-sink-volume 2 +1%")
+                           -- , ((0, xF86XK_AudioLowerVolume), spawn "pactl set-sink-volume 1 -1%; pactl set-sink-volume 2 -1%")
+                           -- , ((0, xF86XK_AudioMute), spawn "pactl set-sink-mute 1 toggle; pactl set-sink-mute 2 toggle")
+                           -- , ((0, xF86XK_MonBrightnessUp), spawn "xbacklight -steps 3 -inc 5")
+                           -- , ((0, xF86XK_MonBrightnessDown), spawn "xbacklight -steps 3 -dec 5")
+                         ]
+          `removeKeys` [(mod4Mask, xK_l)]
 
 startup :: X ()
 startup = do
