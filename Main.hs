@@ -1,4 +1,5 @@
 import XMonad
+import XMonad.Actions.PhysicalScreens
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
@@ -53,6 +54,7 @@ main = do
           startupHook = startup
         }
         `additionalKeys` [ ((mod4Mask .|. shiftMask, xK_z), spawn "slock"),
+                           ((mod4Mask, xK_n), onNextNeighbour def W.view),
                            ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s"),
                            ((0, xK_Print), spawn "scrot")
                            -- , ((0, xF86XK_AudioRaiseVolume), spawn "pactl set-sink-volume 1 +1%; pactl set-sink-volume 2 +1%")
